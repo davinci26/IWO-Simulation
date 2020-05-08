@@ -13,6 +13,7 @@ sns.set(rc={'figure.figsize': (11, 4)})
 hedging_percentage = 100
 initial_investment = 5000
 reInvesting = True
+interest_rate = 0.15
 
 subsetSize = None
 
@@ -79,7 +80,7 @@ def simulate(ema_span_low, ema_span_high, ema_span_long_term, subset, fund_days,
         end = hedge_end.iloc[i].name
         end_year = end.strftime('%Y')
         hedgeProfits = short_shell(start, end, subset,
-                                   current_shares, hedging_percentage)
+                                   current_shares, hedging_percentage, interest_rate)
         annual_profits[end_year] += hedgeProfits
         if reInvesting:
             price_at_hedge_end = subset.loc[end].values[0]
@@ -128,7 +129,7 @@ def simulate(ema_span_low, ema_span_high, ema_span_long_term, subset, fund_days,
     return hedged_cagr, hedged_portofolio_value, cash, hold_value, hold_cagr, annual_profits,  narrow_ema, wide_ema, long_term_ema, hedged
 
 
-def short_shell(dateStart, dateEnd, priceSet, shares_owned, hedging_percentage):
+def short_shell(dateStart, dateEnd, priceSet, shares_owned, hedging_percentage, interest_rate):
     """
     This means that we borrow the minumum number of shares n such that n * price_start >= amount
     """
@@ -143,8 +144,12 @@ def short_shell(dateStart, dateEnd, priceSet, shares_owned, hedging_percentage):
 
     cash_at_start = shares_borrowed * price_start
 
+    interest = (cash_at_start * interest_rate / 360) * \
+        (max((dateEnd - dateStart).days, 1))
+
     price_end = priceSet.loc[dateEnd].values[0]
     cash_end_required = shares_borrowed * price_end
+    cash_end_required += interest
 
     profit = cash_at_start - cash_end_required
 
