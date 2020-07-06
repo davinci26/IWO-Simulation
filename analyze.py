@@ -222,11 +222,13 @@ def main_loop(long_etf, strategy, initial_investment, downtrend_detector, downtr
     bear_period_start, bear_period_end = downtrend_detector(
         long_etf, downtrend_detector_parameters)
 
+    bear_perf = []
     for i in range(0, min(bear_period_start.shape[0], bear_period_end.shape[0])):
         start = bear_period_start.iloc[i].name
         price_start = long_etf.loc[start].values[0]
         valuation_start = cash + current_shares * price_start
         end = bear_period_end.iloc[i].name
+
         price_end = long_etf.loc[start].values[0]
 
         cash, current_shares = hedge_stragegy(long_etf, start, end,
@@ -234,12 +236,14 @@ def main_loop(long_etf, strategy, initial_investment, downtrend_detector, downtr
 
         valuation_end = cash + current_shares * price_end
 
+        growth = (valuation_end - valuation_start) / valuation_start * 100
+        bear_perf.append(growth)
         logger.debug("Bear {} {}".format(
             start.strftime('%B %Y'), end.strftime('%B %Y')))
         logger.debug(
-            "\t  Valuation(start -> end) {:.2f} -> {:.2f}".format(valuation_start, valuation_end))
+            "\t  Valuation(start -> end) {:.2f}$ -> {:.2f}$, Difference: {:.2f}$".format(valuation_start, valuation_end, valuation_end - valuation_start))
         logger.debug(
-            "\t  Cost: {:.2f}".format(valuation_end - valuation_start))
+            "\t  Hedge Performance: {:.2f}%".format(growth))
 
     price_end = long_etf.iloc[-1].values[0]
     strategy_portfolio_value = price_end * current_shares
@@ -255,6 +259,14 @@ def main_loop(long_etf, strategy, initial_investment, downtrend_detector, downtr
 
     logger.info("\t- {} outperforms Baseline by {:.2f}x".format(strategy,
                                                                 strategy_value/baseline_value))
+
+    logger.info(
+        "\t- {}".format(pd.DataFrame({'Average Perfomance during Signal:': bear_perf}).describe()))
+
+    # pd.DataFrame({'Average Perfomance during Signal:': bear_perf}
+    #              ).hist(bins=100)
+
+    plt.show()
     return hedged_cagr
 
 
