@@ -1,6 +1,4 @@
-## <Name of the article>
-
-## How to run the code:
+## [Why sell when you can also buy](https://medium.com/@davinci260/why-only-buy-when-you-can-also-sell-39e318c35f5a)
 
 ## Disclaimer
 All writers' opinions are their own and do not constitute financial advice in any way whatsoever. Nothing published by the writer constitutes an investment recommendation, nor should any data or Content published by the writer be relied upon for any investment activities.
